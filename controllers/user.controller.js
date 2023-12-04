@@ -1,9 +1,9 @@
-const { config } = require("dotenv");
+const config = require("../config/config");
 const { models, Sequelize } = require("../config/sequelize-config");
 const Op = Sequelize.Op;
 const helper = require("../services/helper");
 const jwt = require("jsonwebtoken");
-
+const { isAuthorized } = require("../middlewares/authorisation.middleware");
 //creating new user account
 const addUserController = async (req, res, next) => {
   const searchUser = await models.users.findAndCountAll({
