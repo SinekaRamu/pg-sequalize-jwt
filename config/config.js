@@ -16,6 +16,7 @@ const envConfigs = {
   uat: { ...dbConfig },
   port: process.env.PORT,
   host: process.env.HOST,
+  jwtSecret: "shop-secret",
 };
 
 module.exports = { ...envConfigs };

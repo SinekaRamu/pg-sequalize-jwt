@@ -1,8 +1,8 @@
-const Joi = require("joi");
-
+const { config } = require("dotenv");
 const { models, Sequelize } = require("../config/sequelize-config");
 const Op = Sequelize.Op;
 const helper = require("../services/helper");
+const jwt = require("jsonwebtoken");
 
 //creating new user account
 const addUserController = async (req, res, next) => {
@@ -81,8 +81,14 @@ const loginController = async (req, res, next) => {
       searchUser.user_password
     );
     if (passwordMatch) {
-      res.json({
-        searchUser,
+      const payload = {
+        user_id: searchUser.user_id,
+        first_name: searchUser.first_name,
+        user_name: searchUser.user_name,
+      };
+      const token = jwt.sign(payload, config.jwtSecret, { expiresIn: "1h" });
+      return res.json({
+        token,
       });
     }
     return res.status(403).json({ message: "Not valid" });
