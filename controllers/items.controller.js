@@ -28,7 +28,7 @@ const addItemController = async (req, res) => {
     });
   } catch (error) {
     return res.json({
-      message: error.errors.map((d) => d.message),
+      message: error.message,
     });
   }
 };
@@ -56,7 +56,7 @@ const updateItemContentController = async (req, res) => {
     });
   } catch (error) {
     return res.send({
-      message: error.errors.map((d) => d.message),
+      message: error.message,
     });
   }
 };
@@ -74,7 +74,7 @@ const getSingleItemController = async (req, res) => {
       getSingleItem,
     });
   } catch (error) {
-    return res.send({ message: error.errors.map((d) => d.message) });
+    return res.send({ message: error.message });
   }
 };
 

@@ -1,30 +1,29 @@
+const { sequelize, models, Sequelize } = require("../config/sequelize-config");
+
 async function addRatingController(req, res) {
   try {
-    const queryText =
-      "INSERT INTO ratings(item_id,user_id,rating) VALUES($1,$2,$3) RETURNING *";
-    const pgRes = await pgClient.query(queryText, [
-      req.body.item_id,
-      req.body.user_id,
-      req.xop.rating,
-    ]);
-    res.json({
-      rows: pgRes.rows,
-      count: pgRes.rowCount,
+    const addRating = await models.ratings.create({
+      rating: req.xop.rating,
+      user_id: req.xop.user_id,
+      item_id: req.xop.item_id,
     });
-  } catch (err) {
-    res.status(500).json({ error: "Unknown Error" });
+    return res.json({
+      addRating,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 }
 
 const overallRatingController = async (req, res) => {
-  const pgRes = await pgClient.query(
-    "select item_id,AVG(rating) AS overall_rating from ratings GROUP by item_id;"
-  );
-
-  res.json({
-    rows: pgRes.rows,
-    count: pgRes.rowCount,
+  const overallRating = await models.ratings.findAll({
+    attributes: [
+      [Sequelize.fn("AVG", Sequelize.col("ratingValue")), "overall_rating"],
+    ],
+    group: ["item_id"],
   });
+
+  res.json({ overallRating });
 };
 
 module.exports = {
