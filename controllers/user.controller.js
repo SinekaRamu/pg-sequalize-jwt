@@ -4,6 +4,7 @@ const Op = Sequelize.Op;
 const helper = require("../services/helper");
 const jwt = require("jsonwebtoken");
 const { isAuthorized } = require("../middlewares/authorisation.middleware");
+
 //creating new user account
 const addUserController = async (req, res, next) => {
   const searchUser = await models.users.findAndCountAll({
@@ -49,7 +50,7 @@ const updateUserController = async (req, res) => {
       },
       {
         where: {
-          user_id: req.params.id,
+          user_id: req.decoded.user_id,
         },
         returning: true,
       }
@@ -83,17 +84,30 @@ const loginController = async (req, res, next) => {
     if (passwordMatch) {
       const payload = {
         user_id: searchUser.user_id,
-        first_name: searchUser.first_name,
         user_name: searchUser.user_name,
       };
-      const token = jwt.sign(payload, config.jwtSecret, { expiresIn: "1h" });
+      const generated_token = jwt.sign(payload, config.jwtSecret);
+      const updateUser = await models.users.update(
+        {
+          token: generated_token,
+        },
+        {
+          where: {
+            id: searchUser.id,
+          },
+          returning: true,
+        }
+      );
       return res.json({
-        token,
+        updateUser,
       });
     }
     return res.status(403).json({ message: "Not valid" });
   } catch (error) {
-    return res.send(error);
+    return next({
+      status: 400,
+      message: error.message,
+    });
   }
 };
 
@@ -103,7 +117,7 @@ const getAccountController = async (req, res, next) => {
   try {
     const getUserController = await models.users.findOne({
       where: {
-        user_id: req.params.id,
+        user_id: req.decoded.user_id,
       },
       returning: true,
     });
@@ -114,7 +128,7 @@ const getAccountController = async (req, res, next) => {
   } catch (error) {
     return next({
       status: 400,
-      message: "unknown user id",
+      message: error.message,
     });
   }
 };
